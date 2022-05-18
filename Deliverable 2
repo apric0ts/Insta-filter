@@ -1,0 +1,90 @@
+from re import X
+from matplotlib import pyplot as plt
+import matplotlib.image as mpimg
+from PIL import Image
+import cv2
+from google.colab.patches import cv2_imshow
+import numpy as np
+
+image = cv2.imread('/media/Bozu.png')
+
+def vertical_flip(img):
+  return cv2_imshow(img[::-1])
+
+
+def horizontal_flip(img):
+  imgc = img.copy()
+  for x in range(len(imgc)):
+    imgc[x] = img[x][::-1]
+  return cv2_imshow(imgc)
+
+def miniclip(n, low, high):
+    if n > high:
+      n = high
+    elif n < low:
+      n = low
+    return n
+
+def clip(broken_image, low, high):
+  br_img = broken_image.copy()
+  dimensions = br_img.shape
+  y = dimensions[0]
+  x = dimensions[1]
+  z = dimensions[2]
+
+  for n in range(y):
+    for m in range(x):
+      for p in range(z):
+        br_img[n,m,p] = np.array(miniclip(br_img[n,m,p], low, high))
+  return cv2_imshow(br_img)
+
+def contrast(img, alph):
+  imgc = img.copy()
+  dimensions = imgc.shape
+  y = dimensions[0]
+  x = dimensions[1]
+  z = dimensions[2]
+  for n in range(y):
+    for m in range(x):
+      for p in range(z):
+        imgc[n,m,p] = miniclip(alph * img[n,m,p], 0, 255)
+
+  return cv2_imshow(imgc)
+
+def add_brightness(img, beta):
+  imgc = img.copy()
+  dimensions = imgc.shape
+  y = dimensions[0]
+  x = dimensions[1]
+
+  for n in range(y):
+    for m in range(x):
+      pixel = list(imgc[n,m])
+      for z in range(len(pixel)):
+        if pixel[z] + beta > 255:
+          pixel[z] = 255
+        else:
+          pixel[z] += beta
+      imgc[n,m] = np.array(pixel)
+  return cv2_imshow(imgc)
+
+def apply_threshold(img, thr):
+  imgc = img.copy()
+  dimensions = imgc.shape
+  y = dimensions[0]
+  x = dimensions[1]
+
+  for n in range(y):
+    for m in range(x):
+      if sum(imgc[n,m])/3 >= thr:
+        imgc[n,m] = 255.0
+      else:
+        imgc[n,m] = 0.0
+  return cv2_imshow(imgc)
+
+vertical_flip(image)
+horizontal_flip(image)
+clip(image, 0, 255)
+contrast(image, 1.3)
+add_brightness(image, 50)
+apply_threshold(image, 255)
