@@ -1,0 +1,69 @@
+import cv2
+import numpy as np
+from google.colab.patches import cv2_imshow
+from random import randint
+import math
+
+image = cv2.imread("/media/Bozu.png")
+
+def makeGradientList(height, width, limit, stages, minAlph):
+  pass
+
+def applyGradient(img):
+  y = img.shape[0] # .shape gives dimensions in (y, x, [r,g,b])
+  x = img.shape[1]
+  pinkpixel = [198, 184, 254] # want to change pixels at borders to this
+  stageList = [
+               [y / 100, x / 100, .8], 
+               [y / 90, x / 90, .7], 
+               [y / 80, x / 80, .6], 
+               [y / 70, x / 70, .5], 
+               [y / 60, x / 60, .4],
+               [y / 50, x / 50, .3],
+               [y / 40, x / 40, .2],
+               [y / 30, x / 30, .1]
+               ] # stages for intensity of gradient
+  stageImgList = [] # put the resulting images with pink pixels applied here
+  output = image.copy() # final image
+  for stage in stageList: 
+    imgc = img.copy() # so original image doesnt get messed up
+    for n in range(y):
+        if (n < stage[0] or n > y - stage[0]):  # if pixel is at (vertical) place make it pink
+          imgc[n, :] = pinkpixel
+    for m in range(x):
+        if m < stage[1] or m > x - stage[1]: # if  pixel is at (horizontal) place make it pink
+          imgc[:, m] = pinkpixel 
+    stageImgList.append(imgc) # add each image to the image list
+
+  for x in range(len(stageImgList)): # overlay everything on top of each other
+    cv2.addWeighted(stageImgList[x], stageList[x][2], output, 1 - stageList[x][2], 0, output)
+
+  return output
+
+def applyHearts(img):
+  imgc = img.copy()
+  y = imgc.shape[0]
+  x = imgc.shape[1]
+  centers = [[int(y/5), int(x/4)], [int(y- y/6), int(x/8)], [int(y - y/4), int(x - x/3)], [int(y/2.75), int(x-x/5)]]
+  for n in range(len(centers)):
+    imgc[centers[n][0]-30:centers[n][0]-26, centers[n][1]-34:centers[n][1]-14] = [198, 184, 254] # top two parts of heart
+    imgc[centers[n][0]-30:centers[n][0]-26, centers[n][1]+14:centers[n][1]+34] = [198, 184, 254]
+    imgc[centers[n][0]-26:centers[n][0]-20, centers[n][1]-40:centers[n][1]-10] = [198, 184, 254] # top two parts of heart
+    imgc[centers[n][0]-26:centers[n][0]-20, centers[n][1]+10:centers[n][1]+40] = [198, 184, 254]
+    imgc[centers[n][0]-20:centers[n][0]-10, centers[n][1]-50:centers[n][1]+50] = [198, 184, 254] # part 1
+    imgc[centers[n][0]-10:centers[n][0]+10, centers[n][1]-60:centers[n][1]+60] = [198, 184, 254] # part 2
+    imgc[centers[n][0]+10:centers[n][0]+20, centers[n][1]-50:centers[n][1]+50] = [198, 184, 254] # part 3
+    imgc[centers[n][0]+20:centers[n][0]+30, centers[n][1]-40:centers[n][1]+40] = [198, 184, 254] # part 4
+    imgc[centers[n][0]+30:centers[n][0]+38, centers[n][1]-30:centers[n][1]+30] = [198, 184, 254] # part 5
+    imgc[centers[n][0]+38:centers[n][0]+46, centers[n][1]-20:centers[n][1]+20] = [198, 184, 254] # part 6
+    imgc[centers[n][0]+46:centers[n][0]+52, centers[n][1]-10:centers[n][1]+10] = [198, 184, 254] # part 7
+    imgc[centers[n][0]+52:centers[n][0]+58, centers[n][1]-4:centers[n][1]+4] = [198, 184, 254] # part 8
+
+  return imgc
+
+heartimg = applyHearts(image)
+gradientimg = applyGradient(heartimg)
+cv2_imshow(gradientimg)
+
+
+
